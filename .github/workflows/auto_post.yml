@@ -1,0 +1,42 @@
+name: Facebook Auto Post
+
+on:
+  schedule:
+    # Chạy 2 tuần/lần: ngày 1 và 15 mỗi tháng lúc 19:00 Taipei (11:00 UTC)
+    - cron: '0 11 1,15 * *'
+  
+  workflow_dispatch:  # Cho phép chạy thủ công
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Create config file from secret
+      run: |
+        echo "${{ secrets.FB_PAGE_CONFIG }}" > config.txt
+    
+    - name: Post to Facebook
+      run: |
+        python fb_post.py
+    
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: post-logs
+        path: |
+          *.log
