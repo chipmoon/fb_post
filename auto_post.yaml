@@ -2,41 +2,41 @@ name: Facebook Auto Post
 
 on:
   schedule:
-    # Chạy 2 tuần/lần: ngày 1 và 15 mỗi tháng lúc 19:00 Taipei (11:00 UTC)
     - cron: '0 11 1,15 * *'
-  
-  workflow_dispatch:  # Cho phép chạy thủ công
+  workflow_dispatch:
 
 jobs:
-  post:
+  post-to-facebook:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4  # ✅ Cập nhật luôn checkout
+    - name: Checkout code
+      uses: actions/checkout@v4
     
     - name: Set up Python
-      uses: actions/setup-python@v5  # ✅ Cập nhật luôn setup-python
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.11'
     
     - name: Install dependencies
       run: |
         pip install --upgrade pip
         pip install -r requirements.txt
     
-    - name: Create config file from secret
+    - name: Create config file
       run: |
         echo "${{ secrets.FB_PAGE_CONFIG }}" > config.txt
     
-    - name: Post to Facebook
+    - name: Run posting script
       run: |
         python fb_post.py
     
+    # OPTION A: Keep the upload step (v4)
     - name: Upload logs
       if: always()
-      uses: actions/upload-artifact@v4  # ✅ ĐÃ SỬA
+      uses: actions/upload-artifact@v4
       with:
         name: post-logs
-        path: |
-          *.log
+        path: '*.log'
+        if-no-files-found: ignore
+        retention-days: 7
